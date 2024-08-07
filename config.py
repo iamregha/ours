@@ -32,3 +32,7 @@ class DevConfig(Config):
     DEBUG = True
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "")
+
+
+
+print("DATABASE_URL:", os.getenv('DATABASE_URL'))
