@@ -14,6 +14,7 @@ from blogforms import UsersForm, LoginForm, PostsForm, SearchForm
 
 
 app = Flask(__name__)
+
 app.config.from_object('config.ProConfig')
 #app.config.from_object('config.DevConfig')
 #app.config.from_pyfile('config.py')
