@@ -24,7 +24,14 @@ class ProConfig(Config):
     FLASK_ENV = 'production'
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')#.replace('postgres://', 'postgresql://')
+    #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')#.replace('postgres://', 'postgresql://')
+    db_url = os.getenv('DATABASE_URL')
+
+    # Check if the URL uses postgres:// and convert it to postgresql://
+    if db_url and db_url.startswith('postgres://'):
+        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+
+    SQLALCHEMY_DATABASE_URI = db_url
     if not SQLALCHEMY_DATABASE_URI:
         raise ValueError("No DATABASE_URL set for Flask application")
 
