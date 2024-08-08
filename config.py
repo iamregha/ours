@@ -25,8 +25,15 @@ class ProConfig(Config):
     DEBUG = False
     TESTING = False
     #SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')#.replace('postgres://', 'postgresql://')
-    db_url = os.getenv('DATABASE_URL')
 
+    # First, try to get POSTGRES_URL (used by Vercel)
+    db_url = os.getenv('POSTGRES_URL')
+    
+    # If POSTGRES_URL is not set, fallback to DATABASE_URL
+    if not db_url:
+        db_url = os.getenv('DATABASE_URL')
+
+    # Normalize the URL to ensure compatibility
     # Check if the URL uses postgres:// and convert it to postgresql://
     if db_url and db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
