@@ -36,7 +36,7 @@ class Users(db.Model, UserMixin):
     about_author = db.Column(db.Text(), nullable=True)
     profile_pic = db.Column(db.String(600), nullable=True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(256))
     posts = db.relationship('Posts', backref='author')
 
     @property
