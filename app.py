@@ -109,6 +109,7 @@ def update(id):
                 print("Permission denied")
             except:
                 flash("Error! Something went wrong!")
+                db.session.rollback()
             # Grab image name
             pic_filename = secure_filename(user_update.profile_pic.filename)
             # Set UUID
@@ -131,6 +132,7 @@ def update(id):
             return render_template('dashboard.html', form=form)
         except:
             flash("Error! Something went wrong....try again!")
+            db.session.rollback()
             return render_template('add_user.html', form=form)
     else:
         return render_template('profile_update.html', form=form, user_update=user_update)
@@ -170,6 +172,7 @@ def edit_post(id):
             return redirect(url_for('manage_post', id=get_post.id))
         except:
             flash("Error! Something went wrong....try again!")
+            db.session.rollback()
             return render_template('editpost.html', form=form, get_post=get_post)
     if get_post.poster_id == current_user.id:
         form.title.data = get_post.title 
@@ -191,6 +194,7 @@ def publish_post(id):
         return redirect(url_for('manage_post', id=get_post.id))
     else:
         flash("Error: Failed to publish post! try again")
+        db.session.rollback()
         return redirect(url_for('add_posts'))
 
 
@@ -206,6 +210,7 @@ def unpublish_post(id):
         return redirect(url_for('manage_post', id=get_post.id))
     else:
         flash("Error: Failed to unpublish post! try again")
+        db.session.rollback()
         return redirect(url_for('add_posts'))
     
 
@@ -223,6 +228,7 @@ def delete(id):
         return render_template('add_user.html', form=form, name=name, user_list=user_list, id=id)
     except:
         flash("Error! Something went wrong...could not delete user!")
+        db.session.rollback()
         return render_template('add_user.html', form=form, name=name, user_list=user_list, id=id)
 
 @app.route('/posts/delete/<int:id>', methods=['GET', 'POST'])
@@ -244,6 +250,7 @@ def delete_post(id):
             print("Permission denied")
         except:
             flash("Error! Something went wrong!")
+            db.session.rollback()
             return redirect(url_for('manage_post'))
     else:
         flash("Access denied!")
@@ -272,8 +279,13 @@ def add_user():
             user = Users(username=form.username.data,author_name=form.name.data, email=form.email.data, 
             favorite_color=form.favorite_color.data, about_author=form.about_author.data,
             password_hash=hash_pw)
-            db.session.add(user)
-            db.session.commit()
+            try:
+                db.session.add(user)
+                db.session.commit()
+            except PermissionError:
+                db.session.rollback()
+            finally:
+                db.session.close()
         form.name.data = ""
         form.username.data = ""
         form.email.data = ""
@@ -312,11 +324,16 @@ def add_posts():
                 popular=0
                 flash("Post has been published!")
             posts = Posts(title=form.title.data, poster_id = poster_id, slug=form.slug.data, content=form.content.data, topics=form.topics.data, post_image=image_name_uuid, publish=publish, popular_view=popular)
-            db.session.add(posts)
-            db.session.commit()
-            form.title.data = ''
-            form.slug.data = ''
-            form.content.data = ''
+            try:
+                db.session.add(posts)
+                db.session.commit()
+                form.title.data = ''
+                form.slug.data = ''
+                form.content.data = ''
+            except:
+                db.session.rollback()
+            finally:
+                db.session.close()
         else:
             if 'save' in request.form:
                 publish = 0
@@ -329,11 +346,16 @@ def add_posts():
                 popular=0
                 flash("publish!")
             posts = Posts(title=form.title.data, poster_id = poster_id, slug=form.slug.data, content=form.content.data, topics=form.topics.data, publish=publish, popular_view=popular)
-            db.session.add(posts)
-            db.session.commit()
-            form.title.data = ''
-            form.slug.data = ''
-            form.content.data = ''
+            try:
+                db.session.add(posts)
+                db.session.commit()
+                form.title.data = ''
+                form.slug.data = ''
+                form.content.data = ''
+            except:
+                db.session.rollback()
+            finally:
+                db.session.close()
     return render_template('create_post.html', form=form, posts=posts)
 
 
@@ -356,8 +378,13 @@ def manage_post():
 def fullpost(title):
     post = Posts.query.filter_by(title=title.replace('-'," ")).first_or_404()
     post.popular_view += 1
-    db.session.add(post)
-    db.session.commit()
+    try:
+        db.session.add(post)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
     return render_template("fullpost.html", post=post)
 
 
