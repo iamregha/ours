@@ -160,6 +160,7 @@ def edit_post(id):
                 print("Permission denied")
             except:
                 flash("Error! Something went wrong!")
+                db.session.rollback()
             image_name = secure_filename(get_post.post_image.filename)
             image_name_uuid = str(uuid.uuid1()) + "_" + image_name
             get_post.post_image.save(os.path.join(app.config['UPLOAD_PATH'], image_name_uuid))
@@ -284,8 +285,7 @@ def add_user():
                 db.session.commit()
             except PermissionError:
                 db.session.rollback()
-            finally:
-                db.session.close()
+
         form.name.data = ""
         form.username.data = ""
         form.email.data = ""
@@ -332,8 +332,7 @@ def add_posts():
                 form.content.data = ''
             except:
                 db.session.rollback()
-            finally:
-                db.session.close()
+
         else:
             if 'save' in request.form:
                 publish = 0
@@ -354,8 +353,7 @@ def add_posts():
                 form.content.data = ''
             except:
                 db.session.rollback()
-            finally:
-                db.session.close()
+            
     return render_template('create_post.html', form=form, posts=posts)
 
 
@@ -378,13 +376,15 @@ def manage_post():
 def fullpost(title):
     post = Posts.query.filter_by(title=title.replace('-'," ")).first_or_404()
     post.popular_view += 1
-    try:
+    db.session.add(post)
+    db.session.commit()
+    """try:
         db.session.add(post)
         db.session.commit()
     except:
         db.session.rollback()
     finally:
-        db.session.close()
+        db.session.close()"""
     return render_template("fullpost.html", post=post)
 
 
