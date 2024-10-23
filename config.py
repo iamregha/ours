@@ -31,7 +31,7 @@ class ProConfig(Config):
     
     # If POSTGRES_URL is not set, fallback to DATABASE_URL
     if not db_url:
-        db_url = os.getenv('DATABASE_URL')
+        db_url = os.getenv('POSTGRES_URL')
 
     # Normalize the URL to ensure compatibility
     # Check if the URL uses postgres:// and convert it to postgresql://
